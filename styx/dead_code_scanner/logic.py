@@ -2,19 +2,18 @@ import re
 from pathlib import Path
 
 from .utils import in_excluding_list
-from utils import get_logger, get_json_content, find_files, get_file_content
+from utils import get_logger, find_files, get_file_content
 
 log = get_logger()
 
 IMPORT_REGEX = r"\b(?:import)(?:\s*\(?\s*[`'\"]|[^`'\"]*from\s+[`'\"])([^`'\"]+)"
 
 
-def get_dependencies(package_json_path):
+def get_dependencies(package_json):
     log.info("Getting dependencies from package.json")
-    package_json_parsed = get_json_content(package_json_path)
 
-    requiredDependencies = list(package_json_parsed["dependencies"].keys())
-    devDependencies = list(package_json_parsed["devDependencies"].keys())
+    requiredDependencies = list(package_json["dependencies"].keys())
+    devDependencies = list(package_json["devDependencies"].keys())
 
     return set(requiredDependencies + devDependencies)
 
@@ -113,7 +112,7 @@ def get_isolated_files(data_report):
     return isolated_files
 
 
-def scan_project(project_path="src", package_json_path=".", project_params_path="."):
+def scan_project(project_path, package_json, project_options):
     data_report = {
         "_errors": [],
         "_isolates": [],
@@ -123,9 +122,7 @@ def scan_project(project_path="src", package_json_path=".", project_params_path=
         "links": [],
     }
 
-    project_options = get_json_content(project_params_path)
-
-    vendor_dependencies = get_dependencies(package_json_path)
+    vendor_dependencies = get_dependencies(package_json)
 
     log.debug(
         "Dependencies [{}] {}".format(len(vendor_dependencies), vendor_dependencies)

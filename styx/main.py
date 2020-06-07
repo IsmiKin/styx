@@ -24,8 +24,11 @@ def run(
 
     project_path = Path(project_dir)
 
+    package_json = utils.get_json_content(package_json)
+    project_options = utils.get_json_content(project_params)
+
     data_report, graph_report_data = scan_project(
-        project_path, package_json, project_params
+        project_path, package_json, project_options
     )
 
     log.info(

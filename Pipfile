@@ -13,6 +13,8 @@ flake8 = "*"
 ujson = "*"
 networkx = "*"
 matplotlib = "*"
+fastapi = "*"
+uvicorn = "*"
 
 [dev-packages]
 pytest = "*"
