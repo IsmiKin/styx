@@ -1,0 +1,58 @@
+{
+	"name": "my-little-todo-frontend",
+	"description": "React app to manage todos",
+	"version": "0.1.0",
+	"private": true,
+	"dependencies": {
+		"@fortawesome/fontawesome-svg-core": "^1.2.13",
+		"@fortawesome/free-solid-svg-icons": "^5.7.0",
+		"@fortawesome/react-fontawesome": "^0.1.4",
+		"@emobg/motion-ui": "0.56.0",
+		"bootstrap": "^4.2.1",
+		"eslint-plugin-react": "^7.12.4",
+		"lodash": "^4.17.11",
+		"react": "^16.7.0",
+		"react-dom": "^16.7.0",
+		"react-scripts": "2.1.3",
+		"reactstrap": "^7.1.0"
+	},
+	"scripts": {
+		"start": "NODE_PATH=src react-scripts start",
+		"start-dev": "NODE_PATH=src REACT_APP_API_HOST=localhost REACT_APP_API_PORT=5000 react-scripts start",
+		"build": "NODE_PATH=src react-scripts build",
+		"ci-test": "NODE_PATH=src CI=true react-scripts test",
+		"test": "NODE_PATH=src react-scripts test",
+		"coverage": "NODE_PATH=src react-scripts test --coverage",
+		"eject": "react-scripts eject",
+		"lint": "eslint src/*.js",
+		"storybook": "NODE_PATH=src start-storybook -p 6006 -c .storybook"
+	},
+	"keywords": [],
+	"author": "IsmiKin <ismikin@gmail.com> (http://github.com/ismikin)",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/ismikin/my-little-todo/issues"
+	},
+	"homepage": "https://github.com/ismikin/my-little-todo#readme",
+	"eslintConfig": {
+		"extends": "react-app"
+	},
+	"browserslist": [
+		">0.2%",
+		"not dead",
+		"not ie <= 11",
+		"not op_mini all"
+	],
+	"devDependencies": {
+		"@babel/core": "^7.2.2",
+		"@babel/preset-env": "^7.3.1",
+		"@babel/preset-react": "^7.0.0",
+		"@storybook/react": "^4.1.11",
+		"babel-jest": "^24.0.0",
+		"babel-loader": "^8.0.5",
+		"enzyme": "^3.8.0",
+		"enzyme-adapter-react-16": "^1.8.0",
+		"jest": "^24.0.0",
+		"react-test-renderer": "^16.7.0"
+	}
+}

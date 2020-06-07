@@ -1,0 +1,8 @@
+{
+    "files_extensions": [".vue", ".js"],
+    "local_import_extensions": [".js", ".vue"],
+    "alias": {
+        "@": "src"
+    },
+    "excluding_patterns": ["assets", "node_modules", ".json", ".scss", ".svg", ".png", ".jpg"]
+}

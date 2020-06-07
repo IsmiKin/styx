@@ -1,0 +1,24 @@
+# NOTE: For simplicity we will keep api and matcher in same, but it SHOULD have different
+# Pipfile and get different images built
+
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+fire = "*"
+simplejson = "*"
+flake8 = "*"
+ujson = "*"
+networkx = "*"
+matplotlib = "*"
+
+[dev-packages]
+pytest = "*"
+mock = "*"
+ptpython = "*"
+vulture = "*"
+
+[requires]
+python_version = "3.6"
