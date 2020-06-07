@@ -99,6 +99,7 @@ def resolve_local_imports(local_import_path, local_import_extensions):
     return local_import_path_resolved
 
 
+# TODO: Improve this, not need for "_" check anymore
 def get_isolated_files(data_report):
     isolated_files = []
 
@@ -113,13 +114,17 @@ def get_isolated_files(data_report):
 
 
 def scan_project(project_path, package_json, project_options):
-    data_report = {
-        "_errors": [],
-        "_isolates": [],
-    }
+    data_report = {}
     graph_report_data = {
         "nodes": [],
         "links": [],
+    }
+    errors = []
+    isolates = []
+    stats = {
+        "scanned_files": 0,
+        "errors": 0,
+        "isolates": 0,
     }
 
     vendor_dependencies = get_dependencies(package_json)
@@ -174,7 +179,7 @@ def scan_project(project_path, package_json, project_options):
             )
 
             if not local_import_path_resolved:
-                data_report["_errors"].append(
+                errors.append(
                     "Couldn't resolve local import for {} on {} file.".format(
                         local_import_path, project_file_absolute_path
                     )
@@ -219,6 +224,10 @@ def scan_project(project_path, package_json, project_options):
         log.debug("File Imports: {}".format(project_file_imports))
         log.debug("File Local Imports {}".format(list(project_file_imports)))
 
-    data_report["_isolates"] = get_isolated_files(data_report)
+    isolates = get_isolated_files(data_report)
 
-    return data_report, graph_report_data
+    stats["scanned_files"] = len(project_found_files)
+    stats["errors"] = len(errors)
+    stats["isolates"] = len(isolates)
+
+    return data_report, graph_report_data, errors, isolates, stats

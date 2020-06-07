@@ -27,19 +27,14 @@ def run(
     package_json = utils.get_json_content(package_json)
     project_options = utils.get_json_content(project_params)
 
-    data_report, graph_report_data = scan_project(
+    data_report, graph_report_data, errors, isolates, stats = scan_project(
         project_path, package_json, project_options
     )
 
-    log.info(
-        "Finish of scanning project [{} files]: {}!".format(
-            len(data_report), project_path
-        )
-    )
 
     log.info(
-        "Total files / Isolated files [{} / {}]!".format(
-            len(data_report), len(data_report["_isolates"])
+        "Total files / Isolated files [{} / {}]! on {}".format(
+            len(data_report), stats["isolates"], project_path,
         )
     )
 
