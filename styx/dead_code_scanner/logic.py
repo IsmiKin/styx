@@ -113,7 +113,7 @@ def get_isolated_files(data_report):
     return isolated_files
 
 
-def scan_project(project_path, package_json, project_options):
+def scan_file_imports_project(project_path, package_json, project_options):
     data_report = {}
     graph_report_data = {
         "nodes": [],

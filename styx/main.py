@@ -6,13 +6,14 @@ import utils
 import cli_logic
 
 from graph.graph_generator import generate_graph
-from dead_code_scanner.logic import scan_project
+from dead_code_scanner.logic import scan_file_imports_project
 
 log = utils.get_logger()
 
-
+# example
+# python styx/main.py scan_file_imports /home/ismikin/ubeeqo-dev/webapp/src --package_json /home/ismikin/ubeeqo-dev/webapp/package.json --project_params ./project-options.json --data_report_output --graph_report_output --graph_image
 # TODO : improve cli flow (arguments)
-def run(
+def scan_file_imports(
     project_dir="src",
     package_json=".",
     project_params=".",
@@ -27,7 +28,7 @@ def run(
     package_json = utils.get_json_content(package_json)
     project_options = utils.get_json_content(project_params)
 
-    data_report, graph_report_data, errors, isolates, stats = scan_project(
+    data_report, graph_report_data, errors, isolates, stats = scan_file_imports_project(
         project_path, package_json, project_options
     )
 
@@ -64,6 +65,18 @@ def run(
         )
 
         generate_graph(graph_report_data, output_graph_file)
+
+
+def scan_translations(
+    project_dir="src",
+    translations_dictonary=".",
+    data_report_output=None,
+    overrides=True,
+):
+
+    project_path = Path(project_dir)
+
+    translations_values = utils.get_json_content(translations_dictonary)
 
 
 # example full run:
