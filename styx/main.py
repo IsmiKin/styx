@@ -1,12 +1,12 @@
-
 import fire
 from pathlib import Path
+from benedict import benedict
 
 import utils
 import cli_logic
 
 from graph.graph_generator import generate_graph
-from dead_code_scanner.logic import scan_file_imports_project
+from dead_code_scanner.logic import scan_file_imports_project, scan_translations_project
 
 log = utils.get_logger()
 
@@ -31,7 +31,6 @@ def scan_file_imports(
     data_report, graph_report_data, errors, isolates, stats = scan_file_imports_project(
         project_path, package_json, project_options
     )
-
 
     log.info(
         "Total files / Isolated files [{} / {}]! on {}".format(
@@ -69,14 +68,32 @@ def scan_file_imports(
 
 def scan_translations(
     project_dir="src",
-    translations_dictonary=".",
+    translations_dictionary=".",
     data_report_output=None,
+    similarity_score_acceptance=None,
     overrides=True,
 ):
 
     project_path = Path(project_dir)
 
-    translations_values = utils.get_json_content(translations_dictonary)
+    translations_values = benedict(translations_dictionary)
+
+    data_report, similars, abandons, errors = scan_translations_project(
+        project_path, translations_values, similarity_score_acceptance
+    )
+
+    random_file_prefix = utils.get_random_prefix(project_path.stem)
+
+    if data_report_output:
+        cli_logic.save_report_file(
+            data_report,
+            data_report_output,
+            cli_logic.TRANSLATIONS_REPORT_NAME,
+            random_file_prefix,
+            overrides,
+        )
+
+    return data_report, similars, abandons, errors
 
 
 # example full run:

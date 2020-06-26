@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+from fuzzywuzzy import fuzz
 
 from .utils import in_excluding_list
 from utils import get_logger, find_files, get_file_content
@@ -7,6 +8,7 @@ from utils import get_logger, find_files, get_file_content
 log = get_logger()
 
 IMPORT_REGEX = r"\b(?:import)(?:\s*\(?\s*[`'\"]|[^`'\"]*from\s+[`'\"])([^`'\"]+)"
+TRANSLATIONS_REGEX = r"(?:[$t]{2})\(([\'\"\`])((?:[^\\\n]|\\\1|\\\\)*?)\1\)"
 
 
 def get_dependencies(package_json):
@@ -231,3 +233,82 @@ def scan_file_imports_project(project_path, package_json, project_options):
     stats["isolates"] = len(isolates)
 
     return data_report, graph_report_data, errors, isolates, stats
+
+
+def scan_translations_project(
+    project_path, translations_values, similarity_score_acceptance
+):
+    data_report = {}
+
+    errors = []
+    similars = []
+    abandons = []
+    stats = {
+        "scanned_files": 0,
+        "errors": 0,
+        "isolates": 0,
+    }
+
+    # TODO: Move this into project_options
+    project_found_files = find_files(project_path, [".vue", ".js"])
+
+    log.debug(
+        "Project files list [{}]: {}".format(
+            len(project_found_files), project_found_files
+        )
+    )
+
+    for project_file in project_found_files:
+        log.info("Scanning {}".format(project_file))
+
+        project_file_absolute_path = project_file.absolute()
+        project_file_content = get_file_content(project_file_absolute_path)
+
+        project_file_translations_used = re.findall(
+            TRANSLATIONS_REGEX, project_file_content
+        )
+        for translations_key_match in project_file_translations_used:
+            # TODO: Improve regex to avoid this
+            translations_key = translations_key_match[1]
+            if translations_key in data_report:
+                data_report[translations_key]["ocurrences"] = (
+                    data_report[translations_key]["ocurrences"] + 1
+                )
+            else:
+                try:
+                    translated_value = translations_values[translations_key]
+
+                    # TODO: Move this into sub method
+                    if similarity_score_acceptance:
+                        for translation_key, translation_data in data_report.items():
+                            similarity_score = fuzz.partial_ratio(
+                                translated_value, translation_data["text"]
+                            )
+                            if similarity_score > similarity_score_acceptance:
+                                similars.append(
+                                    {
+                                        "first": {
+                                            "translation_key": translation_key,
+                                            "translation_value": translation_data[
+                                                "text"
+                                            ],
+                                        },
+                                        "second": {
+                                            "translation_key": translations_key,
+                                            "translation_value": translated_value,
+                                        },
+                                        "similarity_score": similarity_score,
+                                    },
+                                )
+
+                    data_report[translations_key] = {
+                        "ocurrences": 1,
+                        "text": translations_values[translations_key],
+                    }
+                except KeyError:
+                    log.debug("translation key not found: {}".format(translations_key))
+                    abandons.append(translations_key)
+
+            # log.info('translations found: {}'.format(translations_key))
+
+    return data_report, similars, abandons, errors
