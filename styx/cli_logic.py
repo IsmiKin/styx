@@ -7,6 +7,7 @@ DATA_REPORT_FILE_EXTENSION = "json"
 FILE_IMPORTS_REPORT_NAME = "file_imports_report"
 GRAPH_DATA_REPORT_NAME = "graph_data_report"
 TRANSLATIONS_REPORT_NAME = "translations_report"
+TRANSLATIONS_SIMILARS_REPORT_NAME = "translations_report_similars"
 GRAPH_IMAGE = "graph-image"
 
 log = utils.get_logger()

@@ -1,14 +1,16 @@
 import re
 from pathlib import Path
-from fuzzywuzzy import fuzz
 
 from .utils import in_excluding_list
 from utils import get_logger, find_files, get_file_content
+from .constants import (
+    IMPORT_REGEX,
+    TRANSLATIONS_REGEX,
+    FUZZY_WUZZY_RATIO_TYPE,
+    DEFAULT_FUZZY_WUZZY_RATIO_TYPE,
+)
 
 log = get_logger()
-
-IMPORT_REGEX = r"\b(?:import)(?:\s*\(?\s*[`'\"]|[^`'\"]*from\s+[`'\"])([^`'\"]+)"
-TRANSLATIONS_REGEX = r"(?:[$t]{2})\(([\'\"\`])((?:[^\\\n]|\\\1|\\\\)*?)\1\)"
 
 
 def get_dependencies(package_json):
@@ -26,6 +28,14 @@ def in_vendor_list(vendor_dependencies, file_import):
             return True
 
     return False
+
+
+def get_fuzzy_ratio_type(ratio_type):
+    return (
+        FUZZY_WUZZY_RATIO_TYPE[ratio_type]
+        if ratio_type in FUZZY_WUZZY_RATIO_TYPE
+        else FUZZY_WUZZY_RATIO_TYPE[DEFAULT_FUZZY_WUZZY_RATIO_TYPE]
+    )
 
 
 def apply_aliases(file_import, aliases, parent_file, base_path):
@@ -99,6 +109,37 @@ def resolve_local_imports(local_import_path, local_import_extensions):
             local_import_path_resolved = index_js_local_import_path
 
     return local_import_path_resolved
+
+
+def search_for_similars(
+    translations_found,
+    new_translation_key,
+    new_translation_text_value,
+    similarity_score_acceptance,
+    similarity_ratio_type,
+):
+    similars = []
+    for translation_key, translation_data in translations_found.items():
+        fuzzy_wuzzy_ratio_type = get_fuzzy_ratio_type(similarity_ratio_type)
+        similarity_score = fuzzy_wuzzy_ratio_type(
+            new_translation_text_value, translation_data["text"]
+        )
+        if similarity_score > similarity_score_acceptance:
+            similars.append(
+                {
+                    "first": {
+                        "translation_key": translation_key,
+                        "translation_value": translation_data["text"],
+                    },
+                    "second": {
+                        "translation_key": new_translation_key,
+                        "translation_value": new_translation_text_value,
+                    },
+                    "similarity_score": similarity_score,
+                },
+            )
+
+    return similars
 
 
 # TODO: Improve this, not need for "_" check anymore
@@ -236,7 +277,10 @@ def scan_file_imports_project(project_path, package_json, project_options):
 
 
 def scan_translations_project(
-    project_path, translations_values, similarity_score_acceptance
+    project_path,
+    translations_values,
+    similarity_score_acceptance,
+    similarity_ratio_type,
 ):
     data_report = {}
 
@@ -278,28 +322,15 @@ def scan_translations_project(
                 try:
                     translated_value = translations_values[translations_key]
 
-                    # TODO: Move this into sub method
                     if similarity_score_acceptance:
-                        for translation_key, translation_data in data_report.items():
-                            similarity_score = fuzz.partial_ratio(
-                                translated_value, translation_data["text"]
-                            )
-                            if similarity_score > similarity_score_acceptance:
-                                similars.append(
-                                    {
-                                        "first": {
-                                            "translation_key": translation_key,
-                                            "translation_value": translation_data[
-                                                "text"
-                                            ],
-                                        },
-                                        "second": {
-                                            "translation_key": translations_key,
-                                            "translation_value": translated_value,
-                                        },
-                                        "similarity_score": similarity_score,
-                                    },
-                                )
+                        new_similars = search_for_similars(
+                            data_report,
+                            translations_key,
+                            translated_value,
+                            similarity_score_acceptance,
+                            similarity_ratio_type,
+                        )
+                        similars = similars + new_similars
 
                     data_report[translations_key] = {
                         "ocurrences": 1,

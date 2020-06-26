@@ -68,18 +68,25 @@ def scan_file_imports(
 
 def scan_translations(
     project_dir="src",
+    project_params=".",
     translations_dictionary=".",
     data_report_output=None,
     similarity_score_acceptance=None,
+    similarity_ratio_type=None,
     overrides=True,
 ):
 
     project_path = Path(project_dir)
+    project_options = utils.get_json_content(project_params)
 
     translations_values = benedict(translations_dictionary)
 
     data_report, similars, abandons, errors = scan_translations_project(
-        project_path, translations_values, similarity_score_acceptance
+        project_path,
+        project_options,
+        translations_values,
+        similarity_score_acceptance,
+        similarity_ratio_type,
     )
 
     random_file_prefix = utils.get_random_prefix(project_path.stem)
@@ -92,6 +99,15 @@ def scan_translations(
             random_file_prefix,
             overrides,
         )
+
+        if similarity_score_acceptance:
+            cli_logic.save_report_file(
+                similars,
+                data_report_output,
+                cli_logic.TRANSLATIONS_SIMILARS_REPORT_NAME,
+                random_file_prefix,
+                overrides,
+            )
 
     return data_report, similars, abandons, errors
 
