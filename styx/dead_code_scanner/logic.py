@@ -278,6 +278,7 @@ def scan_file_imports_project(project_path, package_json, project_options):
 
 def scan_translations_project(
     project_path,
+    project_options,
     translations_values,
     similarity_score_acceptance,
     similarity_ratio_type,
@@ -293,8 +294,7 @@ def scan_translations_project(
         "isolates": 0,
     }
 
-    # TODO: Move this into project_options
-    project_found_files = find_files(project_path, [".vue", ".js"])
+    project_found_files = find_files(project_path, project_options["files_extensions"])
 
     log.debug(
         "Project files list [{}]: {}".format(
