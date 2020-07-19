@@ -142,6 +142,10 @@ def search_for_similars(
     return similars
 
 
+def has_interpolation(translation_key):
+    return "${" in translation_key
+
+
 # TODO: Improve this, not need for "_" check anymore
 def get_isolated_files(data_report):
     isolated_files = []
@@ -288,6 +292,7 @@ def scan_translations_project(
     errors = []
     similars = []
     abandons = []
+    interpolations = set()
     stats = {
         "scanned_files": 0,
         "errors": 0,
@@ -314,32 +319,39 @@ def scan_translations_project(
         for translations_key_match in project_file_translations_used:
             # TODO: Improve regex to avoid this
             translations_key = translations_key_match[1]
-            if translations_key in data_report:
-                data_report[translations_key]["ocurrences"] = (
-                    data_report[translations_key]["ocurrences"] + 1
-                )
+
+            # If phraseapp string key has interpolation, we skip it
+            if has_interpolation(translations_key):
+                interpolations.add(translations_key)
             else:
-                try:
-                    translated_value = translations_values[translations_key]
+                if translations_key in data_report:
+                    data_report[translations_key]["ocurrences"] = (
+                        data_report[translations_key]["ocurrences"] + 1
+                    )
+                else:
+                    try:
+                        translated_value = translations_values[translations_key]
 
-                    if similarity_score_acceptance:
-                        new_similars = search_for_similars(
-                            data_report,
-                            translations_key,
-                            translated_value,
-                            similarity_score_acceptance,
-                            similarity_ratio_type,
+                        if similarity_score_acceptance:
+                            new_similars = search_for_similars(
+                                data_report,
+                                translations_key,
+                                translated_value,
+                                similarity_score_acceptance,
+                                similarity_ratio_type,
+                            )
+                            similars = similars + new_similars
+
+                        data_report[translations_key] = {
+                            "ocurrences": 1,
+                            "text": translations_values[translations_key],
+                        }
+                    except KeyError:
+                        log.debug(
+                            "translation key not found: {}".format(translations_key)
                         )
-                        similars = similars + new_similars
-
-                    data_report[translations_key] = {
-                        "ocurrences": 1,
-                        "text": translations_values[translations_key],
-                    }
-                except KeyError:
-                    log.debug("translation key not found: {}".format(translations_key))
-                    abandons.append(translations_key)
+                        abandons.append(translations_key)
 
             # log.info('translations found: {}'.format(translations_key))
 
-    return data_report, similars, abandons, errors
+    return data_report, similars, abandons, interpolations, errors

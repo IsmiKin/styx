@@ -81,7 +81,7 @@ def scan_translations(
 
     translations_values = benedict(translations_dictionary)
 
-    data_report, similars, abandons, errors = scan_translations_project(
+    data_report, similars, abandons, interpolations, errors = scan_translations_project(
         project_path,
         project_options,
         translations_values,
@@ -109,7 +109,7 @@ def scan_translations(
                 overrides,
             )
 
-    return data_report, similars, abandons, errors
+    return data_report, similars, abandons, interpolations, errors
 
 
 # example full run:

@@ -17,6 +17,7 @@ fastapi = "*"
 uvicorn = "*"
 python-benedict = "*"
 fuzzywuzzy = "*"
+pyhumps = "*"
 
 [dev-packages]
 pytest = "*"
