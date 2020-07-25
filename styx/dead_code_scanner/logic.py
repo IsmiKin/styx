@@ -199,7 +199,7 @@ def scan_file_imports_project(project_path, package_json, project_options):
             {
                 "id": str(project_file_absolute_path),
                 "group": 1,
-                "name": project_file.stem,
+                "name": project_file.name,
             }
         )
 
@@ -226,11 +226,29 @@ def scan_file_imports_project(project_path, package_json, project_options):
             )
 
             if not local_import_path_resolved:
-                errors.append(
-                    "Couldn't resolve local import for {} on {} file.".format(
+                resolve_file_import_error = {
+                    "error_id": "{}-{}".format(
+                        project_file_absolute_path.name, local_import_path.name,
+                    ),
+                    "importer": {
+                        "path": project_file_absolute_path,
+                        "filename": project_file_absolute_path.name,
+                        "format": project_file_absolute_path.suffixes[0]
+                        if len(project_file_absolute_path.suffixes) == 1
+                        else project_file_absolute_path.suffixes,
+                    },
+                    "imported": {
+                        "path": local_import_path,
+                        "filename": local_import_path.name,
+                        "format": local_import_path.suffixes[0]
+                        if len(local_import_path.suffixes) == 1
+                        else local_import_path.suffixes,
+                    },
+                    "message": "Couldn't resolve local import for {} on {} file.".format(
                         local_import_path, project_file_absolute_path
-                    )
-                )
+                    ),
+                }
+                errors.append(resolve_file_import_error)
                 break
 
             # [GRAPH DATA REPORT] Add link to graph report data
@@ -252,7 +270,12 @@ def scan_file_imports_project(project_path, package_json, project_options):
                 )
             else:
                 data_report[str(local_import_path_resolved)] = {
+                    "path": str(local_import_path_resolved),
+                    "filename": local_import_path_resolved.name,
                     "importer_by": [str(project_file_absolute_path)],
+                    "format": local_import_path_resolved.suffixes[0]
+                    if len(local_import_path_resolved.suffixes) == 1
+                    else local_import_path_resolved.suffixes,
                 }
 
         # Check if file has imported by other file and added to the the data_report
@@ -263,9 +286,12 @@ def scan_file_imports_project(project_path, package_json, project_options):
         else:
             data_report[str(project_file_absolute_path)] = {
                 "path": str(project_file),
-                "filename": project_file.stem,
+                "filename": project_file.name,
                 "imports": [str(file_import) for file_import in resolved_local_imports],
                 "importer_by": [],
+                "format": project_file.suffixes[0]
+                if len(project_file.suffixes) == 1
+                else project_file.suffixes,
             }
 
         log.debug("File Imports: {}".format(project_file_imports))

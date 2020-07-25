@@ -32,6 +32,7 @@ class FileImportReportRequest(CamelModel):
 
 class FileImportReportResponse(CamelModel):
     data_report: dict
+    graph_report_data: dict
     stats: dict
     errors: list
     isolates: list
@@ -84,6 +85,7 @@ async def new_scan_project(file_import_report_request: FileImportReportRequest):
 
     return {
         "data_report": data_report,
+        "graph_report_data": graph_report_data,
         "stats": stats,
         "errors": errors,
         "isolates": isolates,
