@@ -146,6 +146,16 @@ def has_interpolation(translation_key):
     return "${" in translation_key
 
 
+def get_file_information(file_path):
+    return {
+        "path": file_path,
+        "filename": file_path.name,
+        "format": file_path.suffixes[0]
+        if len(file_path.suffixes) == 1
+        else file_path.suffixes,
+    }
+
+
 # TODO: Improve this, not need for "_" check anymore
 def get_isolated_files(data_report):
     isolated_files = []
@@ -155,7 +165,8 @@ def get_isolated_files(data_report):
             continue
 
         if len(project_file["importer_by"]) == 0:
-            isolated_files.append(project_file["path"])
+            file_path = Path(project_file["path"])
+            isolated_files.append(get_file_information(file_path))
 
     return isolated_files
 
@@ -230,20 +241,8 @@ def scan_file_imports_project(project_path, package_json, project_options):
                     "error_id": "{}-{}".format(
                         project_file_absolute_path.name, local_import_path.name,
                     ),
-                    "importer": {
-                        "path": project_file_absolute_path,
-                        "filename": project_file_absolute_path.name,
-                        "format": project_file_absolute_path.suffixes[0]
-                        if len(project_file_absolute_path.suffixes) == 1
-                        else project_file_absolute_path.suffixes,
-                    },
-                    "imported": {
-                        "path": local_import_path,
-                        "filename": local_import_path.name,
-                        "format": local_import_path.suffixes[0]
-                        if len(local_import_path.suffixes) == 1
-                        else local_import_path.suffixes,
-                    },
+                    "importer": get_file_information(project_file_absolute_path),
+                    "imported": get_file_information(local_import_path),
                     "message": "Couldn't resolve local import for {} on {} file.".format(
                         local_import_path, project_file_absolute_path
                     ),
@@ -269,14 +268,9 @@ def scan_file_imports_project(project_path, package_json, project_options):
                     str(project_file_absolute_path)
                 )
             else:
-                data_report[str(local_import_path_resolved)] = {
-                    "path": str(local_import_path_resolved),
-                    "filename": local_import_path_resolved.name,
-                    "importer_by": [str(project_file_absolute_path)],
-                    "format": local_import_path_resolved.suffixes[0]
-                    if len(local_import_path_resolved.suffixes) == 1
-                    else local_import_path_resolved.suffixes,
-                }
+                file_information = get_file_information(local_import_path_resolved)
+                file_information["importer_by"] = [str(project_file_absolute_path)]
+                data_report[str(local_import_path_resolved)] = file_information
 
         # Check if file has imported by other file and added to the the data_report
         if str(project_file_absolute_path) in data_report:
@@ -284,15 +278,12 @@ def scan_file_imports_project(project_path, package_json, project_options):
                 "imports"
             ] = resolved_local_imports
         else:
-            data_report[str(project_file_absolute_path)] = {
-                "path": str(project_file),
-                "filename": project_file.name,
-                "imports": [str(file_import) for file_import in resolved_local_imports],
-                "importer_by": [],
-                "format": project_file.suffixes[0]
-                if len(project_file.suffixes) == 1
-                else project_file.suffixes,
-            }
+            file_information = get_file_information(project_file_absolute_path)
+            file_information["importer_by"] = []
+            file_information["imports"] = [
+                str(file_import) for file_import in resolved_local_imports
+            ]
+            data_report[str(project_file_absolute_path)] = file_information
 
         log.debug("File Imports: {}".format(project_file_imports))
         log.debug("File Local Imports {}".format(list(project_file_imports)))
