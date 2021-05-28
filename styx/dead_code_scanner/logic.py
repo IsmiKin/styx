@@ -6,6 +6,7 @@ from utils import get_logger, find_files, get_file_content
 from .constants import (
     IMPORT_REGEX,
     TRANSLATIONS_REGEX,
+    DATA_TEST_IDS_REGEX,
     FUZZY_WUZZY_RATIO_TYPE,
     DEFAULT_FUZZY_WUZZY_RATIO_TYPE,
 )
@@ -372,3 +373,58 @@ def scan_translations_project(
             # log.info('translations found: {}'.format(translations_key))
 
     return data_report, similars, abandons, interpolations, errors
+
+def scan_data_test_ids_project(
+    project_path,
+    project_options,
+):
+    data_report = {}
+
+    errors = []
+
+    stats = {
+        "scanned_files": 0,
+        "errors": 0,
+        "keys_found": 0,
+    }
+
+    project_found_files = find_files(project_path, project_options["files_extensions"])
+
+    log.debug(
+        "Project files list [{}]: {}".format(
+            len(project_found_files), project_found_files
+        )
+    )
+
+    for project_file in project_found_files:
+        log.info("Scanning {}".format(project_file))
+
+        project_file_absolute_path = project_file.absolute()
+        project_file_content = get_file_content(project_file_absolute_path)
+
+        project_file_data_test_id_used = re.findall(
+            DATA_TEST_IDS_REGEX, project_file_content
+        )
+
+        sanitize_keys = [(test_id_value) for (garbage_quotes, test_id_value) in project_file_data_test_id_used]
+        keys_cardinal = len(sanitize_keys)
+        data_report[str(project_file)] = {
+          'path': str(project_file),
+          'name': str(project_file.name),
+          'keys': sanitize_keys,
+          'cardinal': keys_cardinal
+        }
+        stats["keys_found"] = stats["keys_found"] + keys_cardinal
+
+        for data_test_id_key_match in sanitize_keys:
+            # TODO: Improve regex to avoid this
+            data_test_id_key = data_test_id_key_match[1]
+            log.info("key_found: {}".format(data_test_id_key))
+
+    log.info(
+        "Project files list [{}]".format(
+            len(project_found_files)
+        )
+    )
+    stats["scanned_files"] = len(project_found_files)
+    return data_report, errors, stats

@@ -6,7 +6,7 @@ import utils
 import cli_logic
 
 from graph.graph_generator import generate_graph
-from dead_code_scanner.logic import scan_file_imports_project, scan_translations_project
+from dead_code_scanner.logic import scan_file_imports_project, scan_translations_project, scan_data_test_ids_project
 
 log = utils.get_logger()
 
@@ -110,6 +110,41 @@ def scan_translations(
             )
 
     return data_report, similars, abandons, interpolations, errors
+
+# example
+# python styx/main.py scan_data_test_ids /home/ismikin/ubeeqo-dev/webapp/src  --project_params ./project-options-data-test-ids.json --data_report_output
+# TODO : improve cli flow (arguments)
+def scan_data_test_ids(
+    project_dir="src",
+    project_params=".",
+    data_report_output=None,
+    overrides=True,
+):
+
+    project_path = Path(project_dir)
+
+    project_options = utils.get_json_content(project_params)
+
+    data_report, errors, stats = scan_data_test_ids_project(
+        project_path, project_options
+    )
+
+    log.info(
+        "Total files scanned / keys found[{} / {} ]! on {}".format(
+            stats["scanned_files"], stats["keys_found"], project_path,
+        )
+    )
+
+    random_file_prefix = utils.get_random_prefix(project_path.stem)
+
+    if data_report_output:
+        cli_logic.save_report_file(
+            data_report,
+            data_report_output,
+            cli_logic.DATA_TEST_IDS_REPORT_NAME,
+            random_file_prefix,
+            overrides,
+        )
 
 
 # example full run:

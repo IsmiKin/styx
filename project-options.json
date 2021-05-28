@@ -4,5 +4,5 @@
     "alias": {
         "@": "src"
     },
-    "excluding_patterns": ["assets", "node_modules", ".json", ".scss", ".svg", ".png", ".jpg"]
+    "excluding_patterns": ["assets", "node_modules", ".json", ".scss", ".svg", ".png", ".jpg", ".spec.js"]
 }

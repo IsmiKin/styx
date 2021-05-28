@@ -5,6 +5,7 @@ import utils
 
 DATA_REPORT_FILE_EXTENSION = "json"
 FILE_IMPORTS_REPORT_NAME = "file_imports_report"
+DATA_TEST_IDS_REPORT_NAME = "data_test_ids_report"
 GRAPH_DATA_REPORT_NAME = "graph_data_report"
 TRANSLATIONS_REPORT_NAME = "translations_report"
 TRANSLATIONS_SIMILARS_REPORT_NAME = "translations_report_similars"

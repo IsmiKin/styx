@@ -1,0 +1,4 @@
+{
+    "files_extensions": [".vue"],
+    "excluding_patterns": ["assets", "node_modules", ".json", ".scss", ".svg", ".png", ".jpg", ".spec.js", ".vue"]
+}

@@ -2,6 +2,7 @@ from fuzzywuzzy import fuzz
 
 IMPORT_REGEX = r"\b(?:import)(?:\s*\(?\s*[`'\"]|[^`'\"]*from\s+[`'\"])([^`'\"]+)"
 TRANSLATIONS_REGEX = r"(?:[$t]{2})\(([\'\"\`])((?:[^\\\n]|\\\1|\\\\)*?)\1\)"
+DATA_TEST_IDS_REGEX = r"(?:[data\-test\-id]{12})\=([\'\"\`])((?:[^\\\n]|\\\1|\\\\)*?)\1"
 
 DEFAULT_FUZZY_WUZZY_RATIO_TYPE = "RATIO"
 
