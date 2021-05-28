@@ -416,11 +416,6 @@ def scan_data_test_ids_project(
         }
         stats["keys_found"] = stats["keys_found"] + keys_cardinal
 
-        for data_test_id_key_match in sanitize_keys:
-            # TODO: Improve regex to avoid this
-            data_test_id_key = data_test_id_key_match[1]
-            log.info("key_found: {}".format(data_test_id_key))
-
     log.info(
         "Project files list [{}]".format(
             len(project_found_files)
